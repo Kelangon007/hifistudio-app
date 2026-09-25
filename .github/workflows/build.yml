@@ -1,290 +1,33 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hi-Fi Studio - Ultimate 3D Unified Engine</title>
-  <style>
-    :root { --cyan: #00e5ff; --bg: #0a0a0a; --panel: #141414; --border: #2a2a2a; }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: #ccc; font-family: sans-serif; font-size: 10px; padding-bottom: 50px; }
-    #viewport { width: 100%; max-width: 900px; margin: 0 auto; background: #000; position: relative; aspect-ratio: 16/9; border-bottom: 2px solid var(--cyan); box-shadow: 0 10px 30px rgba(0,229,255,0.1); }
-    canvas { width: 100%; height: 100%; display: block; touch-action: none; }
-    
-    .status-badge { background: rgba(0, 229, 255, 0.1); border: 1px solid var(--cyan); color: var(--cyan); padding: 8px; text-align: center; font-weight: bold; font-size: 11px; letter-spacing: 1px; }
-    .control-wrapper { max-width: 900px; margin: 15px auto; padding: 0 10px; }
-    .btn-row { display: flex; gap: 10px; margin-bottom: 15px; }
-    .btn { flex: 1; padding: 12px; background: var(--panel); border: 1px solid var(--border); color: white; text-align: center; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-    .btn-primary { border-color: var(--cyan); color: var(--cyan); background: rgba(0, 229, 255, 0.05); }
-    
-    .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; position: relative; }
-    .panel-title { color: white; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 5px; color: var(--cyan); }
-    
-    .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .row label { font-weight: 600; color: #888; width: 45%; font-size: 9px; }
-    select, input[type="range"] { width: 50%; background: #000; border: 1px solid #333; color: white; padding: 4px; border-radius: 4px; font-size: 10px; outline: none; }
-    input[type="range"] { -webkit-appearance: none; height: 4px; padding: 0; background: #333; }
-    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--cyan); border-radius: 50%; cursor: pointer; }
-    input[type="file"] { display: none; }
-    
-    .rec-btn { background: #d32f2f; color: white; border: none; padding: 15px; text-align: center; font-weight: bold; border-radius: 6px; margin-top: 15px; cursor: pointer; text-transform: uppercase; }
-    #recIndicator { display: none; position: absolute; top: 15px; right: 15px; background: red; color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; animation: blink 1s infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
-  </style>
-</head>
-<body>
-
-  <div id="viewport">
-    <canvas id="mainCanvas" width="1280" height="720"></canvas>
-    <div id="recIndicator">⏺ REC 720p</div>
-  </div>
-
-  <div class="status-badge">🔥 ULTIMATE ENGINE: 3D SPEAKER + MIRROR SPECTRUM + PARTICLES</div>
-
-  <div class="control-wrapper">
-    <div class="btn-row">
-      <label class="btn" for="fotoInput">🖼️ 1. FOTO</label>
-      <label class="btn btn-primary" for="musikInput">🎵 2. MUSIK</label>
-      <div class="btn" id="playBtn" style="background:var(--cyan); color:black;">▶ PUTAR</div>
-    </div>
-    <input type="file" id="fotoInput" accept="image/*"><input type="file" id="musikInput" accept="audio/*">
-
-    <div class="grid-layout">
-      <!-- ENGINE 1: 3D SPEAKER (LAB FISIKA) -->
-      <div class="panel">
-        <div class="panel-title">🔊 3D SPEAKER ENGINE</div>
-        <div class="row"><label>SAKLAR SPEAKER</label><select id="spkToggle"><option value="on">Nyala</option><option value="off">Mati</option></select></div>
-        <div class="row"><label>EFEK SHADOW 3D</label><select id="effect3D"><option value="yes">Nyala (Depth)</option><option value="no">Mati (Flat)</option></select></div>
-        <div class="row"><label>KEDALAMAN (Z)</label><input type="range" id="depth3D" min="0.1" max="1.5" step="0.1" value="0.8"></div>
-        <div class="row"><label>UKURAN KIRI / KANAN</label>
-            <input type="range" id="spkSizeL" min="50" max="350" value="150" style="width:23%;">
-            <input type="range" id="spkSizeR" min="50" max="350" value="150" style="width:23%; margin-left:4%;">
-        </div>
-        <div class="row"><label>BLUR MASKING</label><input type="range" id="maskSoftness" min="0.1" max="0.95" step="0.05" value="0.5"></div>
-        <div class="row"><label>UKURAN DUST CAP</label><input type="range" id="inRatio" min="0.05" max="0.9" step="0.01" value="0.35"></div>
-        <div class="row"><label>PUMP & SHAKE</label>
-            <input type="range" id="pumpInt" min="0" max="3.0" step="0.1" value="1.0" style="width:23%;">
-            <input type="range" id="shakeInt" min="0" max="40" step="1" value="10" style="width:23%; margin-left:4%;">
-        </div>
-      </div>
-
-      <!-- ENGINE 2: MIRROR SPECTRUM 3D -->
-      <div class="panel">
-        <div class="panel-title">🚥 3D SPECTRUM MATRIX</div>
-        <select id="visType" style="width:100%; margin-bottom:10px;">
-          <optgroup label="Solid & Kaca">
-            <option value="1">1. Solid Bar</option><option value="3">3. Glass Edge</option>
-          </optgroup>
-          <optgroup label="Digital & Peaks">
-            <option value="31">31. VFD Matrix</option><option value="42">42. Solid + Peaks</option>
-          </optgroup>
-        </select>
-        <div class="row"><label>WARNA NEON</label>
-            <select id="visColor"><option value="cyan">Cyan</option><option value="pink">Pink</option><option value="violet">Violet</option></select>
-        </div>
-        <div class="row"><label>LEBAR & TINGGI</label>
-            <input type="range" id="vW" min="100" max="1000" value="600" style="width:23%;">
-            <input type="range" id="vH" min="10" max="400" value="150" style="width:23%; margin-left:4%;">
-        </div>
-        <div class="row"><label>SKEW 3D (MIRROR)</label><input type="range" id="vSkew" min="-1" max="1" step="0.1" value="0"></div>
-        <div class="row"><label>ROTASI SUDUT</label><input type="range" id="vRot" min="-45" max="45" value="0"></div>
-        <div class="row"><label>POSISI (Y)</label><input type="range" id="vY" min="0" max="720" value="550"></div>
-      </div>
-
-      <!-- ENGINE 3: ENVIRONMENT & FX -->
-      <div class="panel">
-        <div class="panel-title">🌫️ ENVIRONMENT FX</div>
-        <div class="row"><label>ASAP KOPI</label><select id="smokeToggle"><option value="off">Mati</option><option value="on">Nyala</option></select></div>
-        <div class="row"><label>DEBU PARTIKEL</label><select id="dustToggle"><option value="off">Mati</option><option value="on">Nyala</option></select></div>
-        <div class="row"><label>PANTULAN KACA</label><select id="glsLine"><option value="on">Nyala</option><option value="off">Mati</option></select></div>
-        <div class="row"><label>OPASITAS KACA</label><input type="range" id="glsOp" min="0" max="1" step="0.1" value="0.3"></div>
-      </div>
-    </div>
-
-    <div class="rec-btn" id="recBtn">🔴 MULAI REKAM 720p</div>
-  </div>
-
-  <script>
-    // --- SETUP CANVAS & BUFFERS ---
-    const canvas = document.getElementById('mainCanvas'); const ctx = canvas.getContext('2d');
-    const bufferCanvas = document.createElement('canvas'); bufferCanvas.width = 1280; bufferCanvas.height = 720; 
-    const bCtx = bufferCanvas.getContext('2d');
-    
-    // --- AUDIO & MEDIA ---
-    const audio = new Audio(); audio.crossOrigin = "anonymous";
-    let audioCtx, analyser, dataArray; let isAudioInit = false; let smoothedBass = 0; let peakHeights = new Array(128).fill(0);
-    let bgImg = new Image(); let isBgReady = false; let bgSc = 1, bgX = 0, bgY = 0;
-
-    // --- PARTICLE ENGINE ---
-    class Particle {
-        constructor(type) { this.type = type; this.reset(); this.y = Math.random() * 720; }
-        reset() {
-            if(this.type === 'smoke') {
-                this.x = 400 + Math.random() * 200; this.y = 600;
-                this.vx = (Math.random() - 0.5) * 0.5; this.vy = -(Math.random() * 1.5 + 0.5);
-                this.size = Math.random() * 20 + 10; this.life = 1.0; this.decay = Math.random() * 0.005 + 0.002;
-            } else {
-                this.x = Math.random() * 1280; this.y = 720 + Math.random() * 100;
-                this.vx = (Math.random() - 0.5) * 0.5; this.vy = -(Math.random() * 2 + 1);
-                this.size = Math.random() * 3 + 1; this.life = Math.random(); this.decay = 0.002;
-            }
-        }
-        update(bassSync) {
-            this.x += this.vx + (Math.sin(Date.now()*0.001)*0.5); this.y += this.vy - (bassSync * 2);
-            this.life -= this.decay; this.size += 0.1;
-            if(this.life <= 0 || this.y < 0) this.reset();
-        }
-        draw(c) {
-            c.globalAlpha = Math.max(0, this.life * (this.type==='smoke'?0.3:0.6));
-            c.fillStyle = this.type === 'smoke' ? '#dddddd' : '#00e5ff';
-            c.beginPath(); c.arc(this.x, this.y, this.size, 0, Math.PI*2); c.fill(); c.globalAlpha = 1.0;
-        }
-    }
-    let particles = [];
-
-    // --- RECORDER ---
-    let mediaRecorder; let recordedChunks = []; let isRecording = false;
-
-    // --- UI EVENT LISTENERS ---
-    document.getElementById('fotoInput').addEventListener('change', e => { if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => { bgImg.src = ev.target.result; bgImg.onload = () => isBgReady = true; }; r.readAsDataURL(e.target.files[0]); } });
-    document.getElementById('musikInput').addEventListener('change', e => { if(e.target.files[0]) audio.src = URL.createObjectURL(e.target.files[0]); });
-    
-    document.getElementById('playBtn').addEventListener('click', () => {
-        if(!audio.src) return alert("Pilih musik dulu bos!");
-        if(!isAudioInit) {
-            audioCtx = new (window.AudioContext||window.webkitAudioContext)(); analyser = audioCtx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = 0.75;
-            audioCtx.createMediaElementSource(audio).connect(analyser); analyser.connect(audioCtx.destination); dataArray = new Uint8Array(analyser.frequencyBinCount); isAudioInit = true;
-        }
-        if(audioCtx.state === 'suspended') audioCtx.resume();
-        if(audio.paused) { audio.play(); document.getElementById('playBtn').innerText = "⏸ PAUSE"; } else { audio.pause(); document.getElementById('playBtn').innerText = "▶ PUTAR"; }
-    });
-
-    document.getElementById('recBtn').addEventListener('click', () => {
-        if(!isRecording) {
-            const stream = canvas.captureStream(30); 
-            if(isAudioInit) { const dest = audioCtx.createMediaStreamDestination(); analyser.connect(dest); stream.addTrack(dest.stream.getAudioTracks()[0]); }
-            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
-            mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(recordedChunks, { type: 'video/mp4' }); const url = URL.createObjectURL(blob); 
-                const a = document.createElement('a'); a.href = url; a.download = 'HiFi_Studio_Full.mp4'; a.click(); URL.revokeObjectURL(url);
-                recordedChunks = [];
-            };
-            mediaRecorder.start(); isRecording = true;
-            document.getElementById('recIndicator').style.display = 'block';
-            document.getElementById('recBtn').innerText = "⏹ STOP REKAM"; document.getElementById('recBtn').style.background = "#4caf50";
-        } else {
-            mediaRecorder.stop(); isRecording = false;
-            document.getElementById('recIndicator').style.display = 'none';
-            document.getElementById('recBtn').innerText = "🔴 MULAI REKAM 720p"; document.getElementById('recBtn').style.background = "#d32f2f";
-        }
-    });
-
-    // --- SPEAKER 3D ENGINE (DARI LAB FISIKA) ---
-    function drawRealSpeaker(cx, cy, radius, pump, shakeX, shakeY, bass) {
-      if (!isBgReady) return;
-      let actualX = cx + shakeX; let actualY = cy + shakeY;
-      let dRatio = parseFloat(document.getElementById('inRatio').value); let R_in = radius * dRatio;
-      let softness = parseFloat(document.getElementById('maskSoftness').value);
-      
-      bCtx.clearRect(0, 0, 1280, 720);
-
-      // Gambar Base & Pump
-      bCtx.save(); bCtx.translate(actualX, actualY); bCtx.scale(pump, pump); 
-      bCtx.drawImage(bgImg, bgX - actualX, bgY - actualY, bgImg.width * bgSc, bgImg.height * bgSc);
-      
-      // 3D Shadowing / Lighting
-      if (document.getElementById('effect3D').value === 'yes') {
-          let depth = parseFloat(document.getElementById('depth3D').value);
-          let sAlpha = Math.min(0.95, depth * (0.2 + bass * 0.8)); let gAlpha = Math.min(0.4, (depth * 0.3) * (0.3 + bass * 0.7)); 
-          let grad3D = bCtx.createRadialGradient(0, 0, R_in, 0, 0, radius);
-          grad3D.addColorStop(0, `rgba(0, 0, 0, ${sAlpha})`); grad3D.addColorStop(0.5, `rgba(255, 255, 255, ${gAlpha})`); grad3D.addColorStop(1, `rgba(0, 0, 0, ${sAlpha * 0.5})`);
-          bCtx.fillStyle = grad3D; bCtx.beginPath(); bCtx.arc(0, 0, radius * 2, 0, Math.PI * 2); bCtx.fill();
-      }
-      bCtx.restore();
-
-      // Masking Soft-Edge (Blur)
-      bCtx.save(); bCtx.globalCompositeOperation = 'destination-in'; bCtx.translate(actualX, actualY);
-      let mGrad = bCtx.createRadialGradient(0, 0, radius * softness, 0, 0, radius);
-      mGrad.addColorStop(0, 'rgba(0,0,0,1)'); mGrad.addColorStop(1, 'rgba(0,0,0,0)');
-      bCtx.fillStyle = mGrad; bCtx.beginPath(); bCtx.fillRect(-radius*2, -radius*2, radius*4, radius*4); bCtx.fill(); bCtx.restore();
-
-      // Tempel ke Canvas Utama
-      ctx.drawImage(bufferCanvas, 0, 0);
-
-      // Dust Cap Rigid Center
-      ctx.save(); ctx.translate(actualX, actualY); ctx.beginPath(); ctx.arc(0, 0, R_in, 0, Math.PI * 2); ctx.clip(); 
-      ctx.drawImage(bgImg, bgX - actualX, bgY - actualY, bgImg.width * bgSc, bgImg.height * bgSc); ctx.restore();
-    }
-
-    // --- MAIN RENDER LOOP ---
-    function renderEngine() {
-        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, 1280, 720);
-        if (isBgReady) {
-            bgSc = Math.max(1280 / bgImg.width, 720 / bgImg.height); bgX = (1280 / 2) - (bgImg.width / 2) * bgSc; bgY = (720 / 2) - (bgImg.height / 2) * bgSc;
-            ctx.drawImage(bgImg, bgX, bgY, bgImg.width * bgSc, bgImg.height * bgSc);
-        }
-
-        let bass = 0; 
-        if (isAudioInit && !audio.paused) { analyser.getByteFrequencyData(dataArray); bass = (dataArray[1]+dataArray[2]+dataArray[3]) / (255*3); } 
-        else if (dataArray) { for (let i=0; i<dataArray.length; i++) dataArray[i] = Math.max(0, dataArray[i]-5); }
-        let pBass = Math.pow(bass, 1.8); smoothedBass += (pBass - smoothedBass) * (pBass > smoothedBass ? 0.6 : 0.15);
-
-        // 1. PARTICLES
-        if(document.getElementById('smokeToggle').value === 'on' || document.getElementById('dustToggle').value === 'on') {
-            while(particles.length < 50) {
-                if(document.getElementById('smokeToggle').value === 'on' && Math.random() > 0.5) particles.push(new Particle('smoke'));
-                else if(document.getElementById('dustToggle').value === 'on') particles.push(new Particle('dust'));
-            }
-            particles.forEach(p => { p.update(smoothedBass); p.draw(ctx); });
-        } else { particles = []; }
-
-        // 2. SPEAKER 3D
-        if(document.getElementById('spkToggle').value === 'on') {
-            let pump = 1.0 + (smoothedBass * parseFloat(document.getElementById('pumpInt').value));
-            let sInt = parseFloat(document.getElementById('shakeInt').value);
-            let shakeX = (Math.random() - 0.5) * smoothedBass * sInt; let shakeY = (Math.random() - 0.5) * smoothedBass * sInt;
-            
-            drawRealSpeaker(320, 360, parseInt(document.getElementById('spkSizeL').value), pump, shakeX, shakeY, smoothedBass); // Kiri
-            drawRealSpeaker(960, 360, parseInt(document.getElementById('spkSizeR').value), pump, shakeX, shakeY, smoothedBass); // Kanan
-        }
-
-        // 3. SPECTRUM MATRIX
-        let vW = parseFloat(document.getElementById('vW').value); let vH = parseFloat(document.getElementById('vH').value);
-        let rot = parseFloat(document.getElementById('vRot').value) * Math.PI / 180; let skew = parseFloat(document.getElementById('vSkew').value);
-        
-        ctx.save(); ctx.translate(640, parseFloat(document.getElementById('vY').value)); ctx.rotate(rot); ctx.transform(1, skew, 0, 1, 0, 0); 
-        ctx.globalCompositeOperation = 'screen'; 
-        let cSel = document.getElementById('visColor').value; let neon = cSel==='cyan'?'#00e5ff':cSel==='pink'?'#ff00aa':'#c400ff';
-        ctx.fillStyle = neon; ctx.strokeStyle = neon; ctx.shadowBlur = 15; ctx.shadowColor = neon;
-        
-        let N = 40; let sp = vW / N; let w = sp * 0.7; ctx.translate(-vW/2, 0); 
-        for(let i=0; i<N; i++) {
-            let rawH = dataArray ? (dataArray[i]/255) * vH : 0;
-            if(rawH > peakHeights[i]) peakHeights[i] = rawH; else peakHeights[i] = Math.max(0, peakHeights[i]-2);
-            let pH = peakHeights[i]; let x = i * sp;
-            
-            let type = document.getElementById('visType').value;
-            if(type === '1') { ctx.fillRect(x, -rawH, w, rawH); } // Solid
-            else if(type === '3') { ctx.lineWidth = 2; ctx.strokeRect(x, -rawH, w, rawH); } // Kaca
-            else if(type === '31') { for(let b=0; b<rawH; b+=6) ctx.fillRect(x, -b, w, 4); } // VFD
-            else if(type === '42') { ctx.fillRect(x, -rawH, w, rawH); ctx.fillStyle='#fff'; ctx.fillRect(x, -pH-4, w, 4); ctx.fillStyle=neon; } // Peaks
-        }
-        ctx.restore();
-
-        // 4. GLASS REFLECTION
-        if(document.getElementById('glsLine').value === 'on') {
-            let cutY = 580; ctx.save(); ctx.fillStyle = `rgba(255,255,255,${parseFloat(document.getElementById('glsOp').value)})`;
-            ctx.fillRect(0, cutY, 1280, 2);
-            let gGrad = ctx.createLinearGradient(0, cutY, 0, 720);
-            gGrad.addColorStop(0, `rgba(0, 229, 255, ${parseFloat(document.getElementById('glsOp').value)})`); gGrad.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = gGrad; ctx.fillRect(0, cutY, 1280, 720 - cutY); ctx.restore();
-        }
-
-        requestAnimationFrame(renderEngine);
-    }
-    renderEngine();
-  </script>
-</body>
-</html>
+name: Build Android APK
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Buat Android Otomatis di Server
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HiFi-Studio-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
