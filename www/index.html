@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lab Visualizer - Jazz Studio (Final)</title>
+  <style>
+    body { margin: 0; background-color: #030303; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
+    #canvas-container { position: relative; width: 100%; max-width: 800px; aspect-ratio: 16/9; background: #000; margin-top: 15px; border: 1px solid #222; }
+    canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+    .controls { width: 96%; max-width: 800px; background: #0a0a0a; padding: 12px; border-radius: 12px; margin-top: 10px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #00ffff; }
+    .btn-group { display: flex; gap: 8px; }
+    .btn, .file-label { flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #ccc; text-align: center; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px; transition: 0.2s;}
+    .file-label:hover { border-color: #00ffff; color: #00ffff; }
+    input[type="file"] { display: none; }
+    .row { display: flex; align-items: center; justify-content: space-between; background: #111; padding: 8px 10px; border-radius: 6px; border: 1px solid #222;}
+    .row label { font-size: 10px; font-weight: bold; color: #888; width: 35%; text-transform: uppercase; }
+    select, input[type="range"] { width: 60%; padding: 4px; background: #222; color: #00ffff; border: 1px solid #333; border-radius: 4px; outline: none; font-size: 11px; font-weight: bold; }
+    input[type="range"] { height: 4px; -webkit-appearance: none; background: #333; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #00ffff; cursor: pointer; }
+    #status { text-align: center; color: #00ffff; font-size: 11px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="canvas-container">
+    <canvas id="canvas" width="1280" height="720"></canvas>
+  </div>
+  <div class="controls">
+    <div id="status">PERFORMA 100%. MASUKKAN FOTO & MUSIK.</div>
+    <div class="btn-group">
+      <label for="bgInput" class="file-label" id="lblBg">🖼️ FOTO</label>
+      <label for="audioInput" class="file-label" id="lblAudio">🎵 MUSIK</label>
+      <button id="playBtn" class="btn" style="background: #00ffff; color: black; border: none;">▶ PLAY</button>
+    </div>
+    <div class="row">
+      <label style="color:#00ffff;">50 GAYA STUDIO</label>
+      <select id="visType">
+          <optgroup label="=== BAR SOLID ===">
+              <option value="1">1. Bar Solid Klasik</option><option value="2">2. Bar Tipis</option><option value="3">3. Bar Tebal Rapat</option><option value="4">4. Bar Renggang</option><option value="5">5. Bar Transparan</option><option value="6">6. Bar Terpotong</option><option value="7">7. Bar Dua Warna</option><option value="8">8. Bar Kasar</option><option value="9">9. Bar Meredup</option><option value="10">10. Bar Minimalis</option>
+          </optgroup>
+          <optgroup label="=== BAR KACA ===">
+              <option value="11">11. Garis Tepi</option><option value="12">12. Garis Tepi Tebal</option><option value="13">13. Garis Tepi Transparan</option><option value="14">14. Garis Tepi Putus</option><option value="15">15. Kiri Kanan Saja</option><option value="16">16. Garis Tepi + Solid</option><option value="17">17. Tepi Ganda</option><option value="18">18. Tepi Setengah</option><option value="19">19. Tepi Tutup Atas</option><option value="20">20. Kaca Halus</option>
+          </optgroup>
+          <optgroup label="=== JARUM ===">
+              <option value="21">21. Jarum Tegak</option><option value="22">22. Jarum Putus</option><option value="23">23. Jarum Titik</option><option value="24">24. Jarum Topi</option><option value="25">25. Jarum Tebal</option><option value="26">26. Jarum Meredup</option><option value="27">27. Jarum Ganda</option><option value="28">28. Jarum Bayangan</option><option value="29">29. Jarum Segmen</option><option value="30">30. Jarum Pendek</option>
+          </optgroup>
+          <optgroup label="=== VFD ===">
+              <option value="31">31. Blok VFD Standar</option><option value="32">32. Blok VFD Rapat</option><option value="33">33. Blok VFD Tebal</option><option value="34">34. VFD Alas Solid</option><option value="35">35. Blok VFD Meredup</option><option value="36">36. VFD Dua Warna</option><option value="37">37. Dot Matrix</option><option value="38">38. VFD Lebar</option><option value="39">39. VFD Terbelah</option><option value="40">40. VFD Ganjil</option>
+          </optgroup>
+          <optgroup label="=== PEAKS ===">
+              <option value="41">41. Topi Saja</option><option value="42">42. Solid + Topi</option><option value="43">43. Kaca + Topi</option><option value="44">44. Jarum + Topi</option><option value="45">45. VFD + Topi</option><option value="46">46. Garis Saja</option><option value="47">47. Solid + Garis</option><option value="48">48. Transparan + Topi</option><option value="49">49. Topi Tebal</option><option value="50">50. Topi Ganda</option>
+          </optgroup>
+      </select>
+    </div>
+    <div class="row">
+      <label>PILIHAN WARNA</label>
+      <select id="visColor">
+         <option value="original" selected>🎨 Bawaan Asli</option>
+         <option value="cyan">Neon Cyan</option>
+         <option value="pink">Neon Pink</option>
+         <option value="violet">Neon Violet</option>
+         <option value="tosca">Neon Tosca</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>UKURAN X/Y</label>
+      <input type="range" id="vW" min="50" max="800" step="5" value="280" style="width:28%;">
+      <input type="range" id="vH" min="10" max="300" step="5" value="80" style="width:28%;">
+    </div>
+    <div class="row">
+      <label>OPASITAS</label>
+      <input type="range" id="visOpacity" min="0.1" max="1.0" step="0.05" value="1.0">
+    </div>
+    <input type="file" id="bgInput" accept="image/*">
+    <input type="file" id="audioInput" accept="audio/*">
+  </div>
+  <script>
+    const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
+    const statusBox = document.getElementById('status'); const lblBg = document.getElementById('lblBg'); const lblAudio = document.getElementById('lblAudio');
+    const audioPlayer = new Audio(); audioPlayer.crossOrigin = "anonymous";
+    let isBgReady = false; let bgImg = new Image(); let bgSc = 1, bgX = 0, bgY = 0;
+    let audioCtx, analyser, dataArray, source; let isAudioInit = false;
+    let peakHeights = new Array(200).fill(0); let smoothedHeights = new Array(200).fill(0);
+    let visX = 640; let visY = 400; let isDrag = false; let dX = 0; let dY = 0;
+
+    function getMousePos(e) {
+      const r = canvas.getBoundingClientRect(); const sX = canvas.width / r.width; const sY = canvas.height / r.height;
+      let cx = e.touches ? e.touches[0].clientX : e.clientX; let cy = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (cx - r.left) * sX, y: (cy - r.top) * sY };
+    }
+    canvas.addEventListener('mousedown', startDrag); canvas.addEventListener('touchstart', startDrag, {passive: false});
+    window.addEventListener('mousemove', drag); window.addEventListener('touchmove', drag, {passive: false});
+    window.addEventListener('mouseup', endDrag); window.addEventListener('touchend', endDrag);
+
+    function startDrag(e) {
+      const p = getMousePos(e); let w = parseFloat(document.getElementById('vW').value); let h = parseFloat(document.getElementById('vH').value);
+      if (Math.abs(p.x - visX) <= w/2 && Math.abs(p.y - visY) <= h*1.5) { isDrag = true; dX = p.x - visX; dY = p.y - visY; if(e.cancelable) e.preventDefault(); }
+    }
+    function drag(e) { if (!isDrag) return; const p = getMousePos(e); visX = p.x - dX; visY = p.y - dY; if(e.cancelable) e.preventDefault(); }
+    function endDrag() { isDrag = false; }
+
+    document.getElementById('bgInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if(file) {
+        statusBox.innerText = "⏳ MEMUAT FOTO...";
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          bgImg.src = event.target.result;
+          bgImg.onload = () => { isBgReady = true; statusBox.innerText = "✅ FOTO OKE."; lblBg.style.borderColor = "#00ffff"; lblBg.style.color = "#00ffff"; };
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('audioInput').addEventListener('change', (e) => {
+      if(e.target.files[0]) { audioPlayer.src = URL.createObjectURL(e.target.files[0]); statusBox.innerText = "✅ MUSIK OKE."; lblAudio.style.borderColor = "#ff00ff"; lblAudio.style.color = "#ff00ff"; }
+    });
+
+    document.getElementById('playBtn').addEventListener('click', () => {
+      if (!audioPlayer.src) return alert("Pilih musik!");
+      if (!isAudioInit) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)(); analyser = audioCtx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = 0.7; 
+        source = audioCtx.createMediaElementSource(audioPlayer); source.connect(analyser); analyser.connect(audioCtx.destination); dataArray = new Uint8Array(analyser.frequencyBinCount); isAudioInit = true;
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (audioPlayer.paused) { audioPlayer.play(); document.getElementById('playBtn').innerText = "⏸ PAUSE"; } else { audioPlayer.pause(); document.getElementById('playBtn').innerText = "▶ PLAY"; }
+    });
+
+    function getBalancedData(N) {
+        let bLen = dataArray ? dataArray.length : 128; let res = [];
+        for (let i = 0; i < N; i++) {
+            if (!dataArray) { res.push(0); continue; }
+            let dist = Math.abs(i - N/2) / (N/2); let dIdx = Math.floor(dist * (bLen * 0.45)); 
+            let target = Math.min(1.0, (dataArray[dIdx] / 255) * (1.0 + dist * 1.5));
+            smoothedHeights[i] += (target - smoothedHeights[i]) * 0.3; res.push(Math.max(0, smoothedHeights[i]));
+        }
+        return res;
+    }
+
+    function drawVisualizer() {
+        const v = parseInt(document.getElementById('visType').value); const cType = document.getElementById('visColor').value;
+        const visH = parseFloat(document.getElementById('vH').value); const visW = parseFloat(document.getElementById('vW').value); const visO = parseFloat(document.getElementById('visOpacity').value);
+        ctx.save(); 
+        
+        let overCol = null;
+        if (cType === 'cyan') overCol = '#00ffff'; else if (cType === 'pink') overCol = '#ff00aa'; else if (cType === 'violet') overCol = '#c400ff'; else if (cType === 'tosca') overCol = '#00ffcc'; 
+        const cO = (origCol) => overCol ? overCol : origCol;
+        
+        let gEQ = ctx.createLinearGradient(0,0,0,-visH); gEQ.addColorStop(0, cO('#00ff00')); gEQ.addColorStop(0.6, cO('#ffff00')); gEQ.addColorStop(1, cO('#ff0000'));
+        let gBlue = ctx.createLinearGradient(0,0,0,-visH); gBlue.addColorStop(0, cO('#00ffff')); gBlue.addColorStop(1, cO('#0088ff'));
+        let gPink = ctx.createLinearGradient(0,0,0,-visH); gPink.addColorStop(0, cO('#ff00aa')); gPink.addColorStop(1, cO('#c400ff'));
+        let cGold = cO('#ffd700'); let cSilver = cO('#e0e0e0'); let cNeonGreen = cO('#00ff41');
+
+        if (!isAudioInit || audioPlayer.paused) { 
+            ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.setLineDash([2,4]); ctx.strokeRect(visX - visW/2, visY - visH, visW, visH); 
+            ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(visX - visW/2, visY); ctx.lineTo(visX + visW/2, visY); ctx.stroke(); 
+        }
+
+        ctx.translate(visX - visW/2, visY); ctx.globalAlpha = visO; ctx.globalCompositeOperation = 'screen'; ctx.lineWidth = 1.5; 
+
+        let N = (v >= 11 && v <= 30) ? 60 : 40; let sp = visW / N; let w = sp * 0.7; let D = getBalancedData(N); let X = (i) => i * sp + (sp-w)/2;
+        
+        ctx.beginPath();
+        if(v==1) { ctx.fillStyle = gEQ; for(let i=0;i<N;i++) ctx.fillRect(X(i), -Math.max(2,D[i]*visH), w, Math.max(2,D[i]*visH)); }
+        else if(v==2) { ctx.fillStyle = gBlue; for(let i=0;i<N;i++) ctx.fillRect(X(i)+w/2-1, -Math.max(2,D[i]*visH), 2, Math.max(2,D[i]*visH)); }
+        else if(v==3) { ctx.fillStyle = gPink; for(let i=0;i<N;i++) ctx.fillRect(i*sp, -Math.max(2,D[i]*visH), sp*0.9, Math.max(2,D[i]*visH)); }
+        else if(v==4) { ctx.fillStyle = cO('#00ffcc'); for(let i=0;i<N;i++) ctx.fillRect(X(i), -Math.max(2,D[i]*visH), sp*0.4, Math.max(2,D[i]*visH)); }
+        else if(v==5) { ctx.fillStyle = gEQ; for(let i=0;i<N;i++) { ctx.globalAlpha = visO*0.5; ctx.fillRect(X(i), -Math.max(2,D[i]*visH), w, Math.max(2,D[i]*visH)); ctx.globalAlpha = visO; } }
+        else if(v>=41 && v<=50) {
+            for(let i=0;i<N;i++) {
+                let rawH = D[i]*visH;
+                if(rawH > peakHeights[i]) peakHeights[i] = rawH; else peakHeights[i] = Math.max(0, peakHeights[i] - 1.5);
+                let pH = peakHeights[i];
+                if(v==41) { ctx.fillStyle=cO('#ffffff'); ctx.fillRect(X(i), -pH-4, w, 4); }
+                else if(v==42) { ctx.fillStyle=gBlue; ctx.fillRect(X(i), -rawH, w, rawH); ctx.fillStyle=cO('#ffffff'); ctx.fillRect(X(i), -pH-4, w, 4); }
+            }
+        }
+        ctx.restore();
+    }
+    function animate() {
+      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, 1280, 720);
+      if (isBgReady) {
+        bgSc = Math.max(1280 / bgImg.width, 720 / bgImg.height); bgX = (1280 / 2) - (bgImg.width / 2) * bgSc; bgY = (720 / 2) - (bgImg.height / 2) * bgSc;
+        ctx.drawImage(bgImg, bgX, bgY, bgImg.width * bgSc, bgImg.height * bgSc);
+      }
+      if (isAudioInit && !audioPlayer.paused) { analyser.getByteFrequencyData(dataArray); } else if (dataArray) { for (let i=0; i<dataArray.length; i++) dataArray[i] = Math.max(0, dataArray[i]-5); }
+      drawVisualizer(); requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>
